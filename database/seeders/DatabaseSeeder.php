@@ -23,5 +23,19 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@app.local',
             'password' => Hash::make('senha@123')
         ]);
+
+        $this->call([
+            RoleSeeder::class,
+            MusicianStatusSeeder::class,
+            MusicCategorySeeder::class,
+            EventTypeSeeder::class,
+            ToneSeeder::class,
+            SkillSeeder::class,
+            UserSeeder::class,
+            BandSeeder::class,
+            MusicianSeeder::class,
+            TagSeeder::class,
+            PlaylistSeeder::class,
+        ]);
     }
 }
