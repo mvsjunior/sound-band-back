@@ -22,9 +22,10 @@ class CategoryStoreRequest extends FormRequest
      */
     public function rules(): array
     {
+        $categoryId = $this->route->post('id');
         return [
             //
-            'name' => 'required|string|max:255|min:1|unique:music_categories,name',Rule::unique('users')->ignore($userId)
+            'name' => 'required|string|max:255|min:1|unique:music_categories,name'
         ];
     }
 }

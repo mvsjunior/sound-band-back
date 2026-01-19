@@ -3,6 +3,7 @@
 namespace App\Domains\Musical\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CategoryUpdateRequest extends FormRequest
 {
@@ -21,9 +22,10 @@ class CategoryUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $categoryId = isset($this->request->all()['id']) ? $this->request->all()['id'] : 0;
         return [
             'id' => 'required|integer|exists:music_categories,id',
-            'name' => 'required|string|max:255|min:1|unique:music_categories,name'
+            'name' => 'required|string|max:255|min:1|',Rule::unique('music_categories')->ignore($categoryId)
         ];
     }
 }
