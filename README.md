@@ -87,3 +87,18 @@ Base URL: `/api`
 
 - Keep secrets out of git; use `.env` from `.env.example`.
 - Store runtime files in `storage/`.
+
+## Architecture Pattern
+
+Each domain lives in `app/Domains/<Domain>` and follows the same directory layout:
+
+- `Actions/`: use cases that orchestrate domain logic for controllers.
+- `Database/`: repositories and Eloquent data access.
+- `DTO/`: response and data transfer shapes.
+- `Entities/`: core domain objects.
+- `Exceptions/`: domain-specific errors.
+- `Http/`: controllers and request validation.
+- `Mappers/`: array-to-DTO mapping helpers.
+- `Routes/`: domain routes.
+
+Use Actions from controllers to keep HTTP thin and concentrate business logic for reuse and testing.
