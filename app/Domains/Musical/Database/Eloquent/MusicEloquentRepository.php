@@ -61,10 +61,37 @@ class MusicEloquentRepository
             ];
         }
 
+        $chords = DB::table('chords')
+            ->select([
+                'chords.id',
+                'chords.music_id',
+                'chords.version',
+                'chords.tone_id',
+                'tones.name as tone_name',
+                'tones.type as tone_type',
+            ])
+            ->join('tones', 'chords.tone_id', '=', 'tones.id')
+            ->whereIn('chords.music_id', $musicIds)
+            ->get()
+            ->toArray();
+
+        $chordsByMusic = [];
+        foreach ($chords as $chord) {
+            $chordsByMusic[$chord->music_id][] = [
+                'id' => $chord->id,
+                'music_id' => $chord->music_id,
+                'version' => $chord->version,
+                'tone_id' => $chord->tone_id,
+                'tone_name' => $chord->tone_name,
+                'tone_type' => $chord->tone_type,
+            ];
+        }
+
         return array_map(
-            function($music) use($tagsByMusic) {
+            function($music) use($tagsByMusic, $chordsByMusic) {
                 $musicArray = (array) $music;
                 $musicArray['tags'] = $tagsByMusic[$music->id] ?? [];
+                $musicArray['chords'] = $chordsByMusic[$music->id] ?? [];
                 return $musicArray;
             },
             $arrayMusics

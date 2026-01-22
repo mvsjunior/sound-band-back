@@ -6,6 +6,7 @@ use App\Domains\Musical\DTO\CategoryDTO;
 use App\Domains\Musical\DTO\LyricsDTO;
 use App\Domains\Musical\DTO\MusicDTO;
 use App\Domains\Musical\Mappers\TagDTOMapper;
+use App\Domains\Musical\Mappers\ChordDTOMapper;
 
 class MusicDTOMapper 
 {
@@ -14,6 +15,11 @@ class MusicDTOMapper
         $tags = array_map(
             fn (array $tag) => TagDTOMapper::fromArray($tag),
             $data['tags'] ?? []
+        );
+
+        $chords = array_map(
+            fn (array $chord) => ChordDTOMapper::fromArray($chord),
+            $data['chords'] ?? []
         );
 
         return new MusicDTO(
@@ -25,7 +31,8 @@ class MusicDTOMapper
                 ($data['category_name'] ?? '')
             ),
             new LyricsDTO($data['lyrics_id'] ?? null, $data['lyrics_content'] ?? ''),
-            $tags
+            $tags,
+            $chords
         );
     }
 }

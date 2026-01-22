@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Musical\Http\Controllers\CategoryController;
+use App\Domains\Musical\Http\Controllers\ChordController;
 use App\Domains\Musical\Http\Controllers\LyricsController;
 use App\Domains\Musical\Http\Controllers\MusicController;
 use App\Domains\Musical\Http\Controllers\TagController;
@@ -27,4 +28,10 @@ Route::prefix('musical')->group(function () {
     Route::post('/music/store', [MusicController::class, 'store']);
     Route::put('/music/update', [MusicController::class, 'update']);
     Route::delete('/music/delete', [MusicController::class, 'delete']);
+
+    Route::get('/chords', [ChordController::class, 'index']);
+    Route::get('/chords/show', [ChordController::class, 'show']);
+    Route::post('/chords/store', [ChordController::class, 'store']);
+    Route::put('/chords/update', [ChordController::class, 'update']);
+    Route::delete('/chords/delete', [ChordController::class, 'delete']);
 });

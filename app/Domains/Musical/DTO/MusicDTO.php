@@ -12,6 +12,7 @@ class MusicDTO extends DTO
         public readonly string $artist,
         public readonly CategoryDTO $category,
         public readonly LyricsDTO $lyrics,
-        public readonly array $tags = []
+        public readonly array $tags = [],
+        public readonly array $chords = []
     ){}
 }
