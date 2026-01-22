@@ -1,59 +1,89 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sound Band API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend for the Sound Band platform. It centralizes authentication and musical catalog data (music, lyrics, categories, tags, and chords) so clients can manage rehearsal material and performance versions.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 12, PHP 8.3
+- MySQL + Redis (Docker)
+- Vite + Tailwind for frontend assets
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Run with Docker
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Start services: `docker compose up -d`
+- Install dependencies: `docker compose exec app composer install`
+- Setup app: `docker compose exec app composer run setup`
+- Run tests: `docker compose exec app php artisan test`
 
-## Learning Laravel
+## Domains and Business Logic
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Auth
+- JWT-based login/registration and session handling.
+- Routes live under `/api/auth/*`.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Musical
 
-## Laravel Sponsors
+#### Core entities
+- Music: name, artist, category, lyrics.
+- Category: required for each music.
+- Lyrics: stored as long text and referenced by music.
+- Tags: many-to-many with music.
+- Chords: version metadata for each music (one music has many chords).
+- Tone: key signature metadata (name + type) used by chords.
+- Chord content: detailed chord sheet stored separately from chord metadata.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+#### Relationships
+- Music belongs to one category and one lyrics.
+- Music has many tags (pivot table `musics_tags`).
+- Music has many chords.
+- Chord belongs to one music and one tone.
+- Chord has one chord content.
 
-### Premium Partners
+#### Chords flow
+- List music: includes chord metadata (id, version, tone) for quick browsing.
+- Chord detail: exposes the full chord content by chord id.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## API Overview
 
-## Contributing
+Base URL: `/api`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Music
+- `GET /musical/music` list/filter music (name, artist, categoryId, id)
+- `POST /musical/music/store` create music
+- `PUT /musical/music/update` update music
+- `DELETE /musical/music/delete` delete music
 
-## Code of Conduct
+### Categories
+- `GET /musical/category`
+- `POST /musical/category/store`
+- `PUT /musical/category/update`
+- `DELETE /musical/category/delete`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Tags
+- `GET /musical/tags`
+- `POST /musical/tags/store`
+- `PUT /musical/tags/update`
+- `DELETE /musical/tags/delete`
 
-## Security Vulnerabilities
+### Lyrics
+- `GET /musical/lyrics`
+- `POST /musical/lyrics/store`
+- `PUT /musical/lyrics/update`
+- `DELETE /musical/lyrics/delete`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Chords
+- `GET /musical/chords` list chords (filters: id, musicId, toneId)
+- `GET /musical/chords/show` chord detail (includes content)
+- `POST /musical/chords/store` create chord
+- `PUT /musical/chords/update` update chord
+- `DELETE /musical/chords/delete` delete chord
 
-## License
+## Testing
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Run all tests: `docker compose exec app php artisan test`
+- Feature tests are in `tests/Feature`.
+
+## Notes
+
+- Keep secrets out of git; use `.env` from `.env.example`.
+- Store runtime files in `storage/`.
