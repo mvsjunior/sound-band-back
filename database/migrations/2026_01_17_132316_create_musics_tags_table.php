@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('chords', function (Blueprint $table) {
+        Schema::create('chord_contents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tone_id')->constrained('tones');
-            $table->foreignId('chord_content_id')->constrained('chord_contents');
-            $table->foreignId('music_id')->constrained('musics');
-            $table->string('version')->nullable();
+            $table->longText("content");
+            $table->timestamps();
         });
     }
 
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('chords');
+        Schema::dropIfExists('chord_contents');
     }
 };

@@ -36,6 +36,9 @@ class DatabaseSeeder extends Seeder
             MusicianSeeder::class,
             TagSeeder::class,
             PlaylistSeeder::class,
+            MusicTagSeeder::class,
+            LyricsSeeder::class,
+            MusicSeeder::class
         ]);
     }
 }

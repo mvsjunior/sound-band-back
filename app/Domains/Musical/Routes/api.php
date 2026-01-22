@@ -2,6 +2,7 @@
 
 use App\Domains\Musical\Http\Controllers\CategoryController;
 use App\Domains\Musical\Http\Controllers\LyricsController;
+use App\Domains\Musical\Http\Controllers\MusicController;
 use App\Domains\Musical\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,4 +22,9 @@ Route::prefix('musical')->group(function () {
     Route::post('/category/store', [CategoryController::class, 'store']);
     Route::put('/category/update', [CategoryController::class, 'update']);
     Route::delete('/category/delete', [CategoryController::class, 'delete']);
+
+    Route::get('/music', [MusicController::class, 'index']);
+    Route::post('/music/store', [MusicController::class, 'store']);
+    Route::put('/music/update', [MusicController::class, 'update']);
+    Route::delete('/music/delete', [MusicController::class, 'delete']);
 });

@@ -31,6 +31,18 @@ class TagEloquentRepository
         return $query->get()->toArray();
     }
 
+    public function getByMusicId(int | array $ids){
+        $db = DB::table('musics_tags');
+
+        $db = is_array($ids)
+            ? $db->whereIn('music_id', $ids)
+            : $db->where('music_id', '=', $ids);
+
+        $db->join('tags', 'musics_tags.tag_id', '=', 'tags.id');
+
+        return $db->get()->toArray();
+    }
+
     public function findById(int $id): ?Tag
     {
         $result = $this->db->select()->where('id',  '=', $id)->get()[0];
