@@ -1,0 +1,476 @@
+{
+  "info": {
+    "name": "Sound Band API",
+    "description": "Collection for Sound Band API endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Auth/Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@app.local\",\n  \"password\": \"senha@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Auth/Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"new.user@app.local\",\n  \"password\": \"senha@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Auth/Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Auth/Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Musical",
+      "item": [
+        {
+          "name": "Music",
+          "item": [
+            {
+              "name": "Music/Find",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/music?name=Hello&artist=Alpha",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "music"],
+                  "query": [
+                    {"key": "name", "value": "Hello"},
+                    {"key": "artist", "value": "Alpha"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Music/Store",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"New Song\",\n  \"artist\": \"New Artist\",\n  \"lyrics\": \"New lyrics\",\n  \"categoryId\": 1,\n  \"tagIds\": [1, 2]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/music/store",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "music", "store"]
+                }
+              }
+            },
+            {
+              "name": "Music/Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"name\": \"Updated Song\",\n  \"artist\": \"Updated Artist\",\n  \"lyrics\": \"Updated lyrics\",\n  \"categoryId\": 1,\n  \"tagIds\": [2]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/music/update",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "music", "update"]
+                }
+              }
+            },
+            {
+              "name": "Music/Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/music/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "music", "delete"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Category",
+          "item": [
+            {
+              "name": "Category/Find",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/category",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "category"]
+                }
+              }
+            },
+            {
+              "name": "Category/Store",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Pop\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/category/store",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "category", "store"]
+                }
+              }
+            },
+            {
+              "name": "Category/Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"name\": \"Rock\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/category/update",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "category", "update"]
+                }
+              }
+            },
+            {
+              "name": "Category/Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/category/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "category", "delete"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tag",
+          "item": [
+            {
+              "name": "Tag/Find",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/tags",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "tags"]
+                }
+              }
+            },
+            {
+              "name": "Tag/Store",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Acoustic\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/tags/store",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "tags", "store"]
+                }
+              }
+            },
+            {
+              "name": "Tag/Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"name\": \"Live\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/tags/update",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "tags", "update"]
+                }
+              }
+            },
+            {
+              "name": "Tag/Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/tags/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "tags", "delete"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lyrics",
+          "item": [
+            {
+              "name": "Lyrics/Find",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/lyrics",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "lyrics"]
+                }
+              }
+            },
+            {
+              "name": "Lyrics/Store",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"content\": \"Some lyrics\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/lyrics/store",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "lyrics", "store"]
+                }
+              }
+            },
+            {
+              "name": "Lyrics/Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"content\": \"Updated lyrics\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/lyrics/update",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "lyrics", "update"]
+                }
+              }
+            },
+            {
+              "name": "Lyrics/Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/lyrics/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "lyrics", "delete"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chords",
+          "item": [
+            {
+              "name": "Chords/Find",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/chords?musicId=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "chords"],
+                  "query": [
+                    {"key": "musicId", "value": "1"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Chords/Show",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/chords/show?id=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "chords", "show"],
+                  "query": [
+                    {"key": "id", "value": "1"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Chords/Store",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"musicId\": 1,\n  \"toneId\": 19,\n  \"version\": \"Guitar version in Gm\",\n  \"content\": \"Intro: Gm | Eb | Bb | F\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/chords/store",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "chords", "store"]
+                }
+              }
+            },
+            {
+              "name": "Chords/Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"musicId\": 1,\n  \"toneId\": 19,\n  \"version\": \"Updated version\",\n  \"content\": \"Updated content\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/chords/update",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "chords", "update"]
+                }
+              }
+            },
+            {
+              "name": "Chords/Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/chords/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "chords", "delete"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
