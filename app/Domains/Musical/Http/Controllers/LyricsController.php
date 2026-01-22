@@ -2,17 +2,15 @@
 
 namespace App\Domains\Musical\Http\Controllers;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
+use App\Domains\Musical\Actions\Lyrics\DeleteLyricsAction;
+use App\Domains\Musical\Actions\Lyrics\ListLyricsAction;
+use App\Domains\Musical\Actions\Lyrics\StoreLyricsAction;
+use App\Domains\Musical\Actions\Lyrics\UpdateLyricsAction;
 use App\Domains\Commons\Exceptions\DuplicateEntryException;
 use App\Domains\Commons\Http\ApiResponseTrait;
-use App\Domains\Musical\Database\LyricsRepository;
-use App\Domains\Musical\DTO\LyricsDTO;
-use App\Domains\Musical\Entities\Lyrics;
 use App\Domains\Musical\Http\Requests\LyricsDeleteRequest;
 use App\Domains\Musical\Http\Requests\LyricsStoreRequest;
 use App\Domains\Musical\Http\Requests\LyricsUpdateRequest;
-use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Throwable;
 
@@ -20,23 +18,21 @@ class LyricsController
 {
     use ApiResponseTrait;
     
-    public function index(Request $request, LyricsRepository $lyricsRepo)
+    public function index(Request $request, ListLyricsAction $action)
     {
-        $expression = new QueryExpression();
-        $expression = $request->get('content', null) ? $expression->add(new QueryClausule('content', 'LIKE', "%{$request->get('content','')}%")) : $expression;
-        $expression = $request->get('id', null)   ? $expression->add(new QueryClausule("id", "=", $request->get('id')))                 : $expression;
+        $id = filter_var($request->get('id'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
 
-        return $this->successResponse($lyricsRepo->all($expression));
+        return $this->successResponse(
+            $action->execute($request->get('content'), $id)
+        );
     }
 
-    public function store(LyricsStoreRequest $request, LyricsRepository $lyricsRepo)
+    public function store(LyricsStoreRequest $request, StoreLyricsAction $action)
     {
         try
         {
-            $tag = $lyricsRepo->store(new Lyrics(null,$request->validated("content")));
-            $tagDTO = new LyricsDTO($tag->id(), $tag->content());
-
-            return $this->successResponse($tagDTO->toArray());
+            $lyricsDTO = $action->execute($request->validated('content'));
+            return $this->successResponse($lyricsDTO->toArray());
         }
         catch(DuplicateEntryException $e)
         {
@@ -44,11 +40,11 @@ class LyricsController
         }
     }
 
-    public function delete(LyricsDeleteRequest $request, LyricsRepository $lyricsRepo)
+    public function delete(LyricsDeleteRequest $request, DeleteLyricsAction $action)
     {
         try
         {
-            $lyricsRepo->delete($request->validated('id'));
+            $action->execute($request->validated('id'));
             return $this->successResponse();
         }
         catch(Throwable $th)
@@ -57,10 +53,9 @@ class LyricsController
         }
     }
 
-    public function update(LyricsUpdateRequest $request, LyricsRepository $lyricsRepo){
+    public function update(LyricsUpdateRequest $request, UpdateLyricsAction $action){
         try {
-            $tag = new Lyrics($request->post('id'), $request->post('content'));
-            $lyricsRepo->update($tag);
+            $action->execute($request->validated('id'), $request->validated('content'));
             return $this->successResponse();
         } catch (\Throwable $th) {
             //throw $th;

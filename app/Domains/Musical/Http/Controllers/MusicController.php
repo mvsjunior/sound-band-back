@@ -2,18 +2,14 @@
 
 namespace App\Domains\Musical\Http\Controllers;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
+use App\Domains\Musical\Actions\Music\DeleteMusicAction;
+use App\Domains\Musical\Actions\Music\ListMusicsAction;
+use App\Domains\Musical\Actions\Music\StoreMusicAction;
+use App\Domains\Musical\Actions\Music\UpdateMusicAction;
 use App\Domains\Commons\Http\ApiResponseTrait;
-use App\Domains\Musical\Database\CategoryRepository;
-use App\Domains\Musical\Database\LyricsRepository;
-use App\Domains\Musical\Database\MusicRepository;
-use App\Domains\Musical\Entities\Lyrics;
-use App\Domains\Musical\Entities\Music;
 use App\Domains\Musical\Http\Requests\MusicDeleteRequest;
 use App\Domains\Musical\Http\Requests\MusicStoreRequest;
 use App\Domains\Musical\Http\Requests\MusicUpdateRequest;
-use App\Domains\Musical\Mappers\MusicDTOMapper;
 use Symfony\Component\HttpFoundation\Request;
 use Throwable;
 
@@ -21,54 +17,35 @@ class MusicController
 {
     use ApiResponseTrait;
     
-    public function index(Request $request, MusicRepository $musicRepo)
+    public function index(Request $request, ListMusicsAction $action)
     {
-        $expression = new QueryExpression();
-        $expression = $request->get('name', null) ? $expression->add(new QueryClausule('musics.name', 'LIKE', "%{$request->get('name','')}%")) : $expression;
-        $expression = $request->get('artist', null) ? $expression->add(new QueryClausule('musics.artist', 'LIKE', "%{$request->get('artist','')}%")) : $expression;
-        $expression = $request->get('categoryId', null) ? $expression->add(new QueryClausule('musics.category_id', '=', $request->get('categoryId'))) : $expression;
-        $expression = $request->get('id', null) ? $expression->add(new QueryClausule('musics.id', '=', $request->get('id'))) : $expression;
+        $categoryId = filter_var($request->get('categoryId'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+        $id = filter_var($request->get('id'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
 
-        $musicDTOs = array_map(
-            fn (array $music) => MusicDTOMapper::fromArray($music),
-            $musicRepo->all($expression)
+        return $this->successResponse(
+            $action->execute(
+                $request->get('name'),
+                $request->get('artist'),
+                $categoryId,
+                $id
+            )
         );
-
-        return $this->successResponse($musicDTOs);
     }
 
     public function store(
         MusicStoreRequest $request,
-        MusicRepository $musicRepo,
-        LyricsRepository $lyricsRepo,
-        CategoryRepository $categoryRepo
+        StoreMusicAction $action
     )
     {
         try
         {
-            $lyrics = $lyricsRepo->store(new Lyrics(null, $request->validated("lyrics")));
-            $category = $categoryRepo->findById($request->validated("categoryId"));
-
-            $music = new Music(
-                null,
-                $request->validated("name"),
-                $request->validated("artist"),
-                $lyrics,
-                $category
+            $musicDTO = $action->execute(
+                $request->validated('name'),
+                $request->validated('artist'),
+                $request->validated('lyrics'),
+                $request->validated('categoryId'),
+                $request->validated('tagIds', [])
             );
-
-            $music = $musicRepo->store($music);
-
-            $tagIds = $request->validated("tagIds", []);
-            if (!empty($tagIds)) {
-                $musicRepo->syncTags($music->id(), $tagIds);
-            }
-
-            $expression = (new QueryExpression())
-                ->add(new QueryClausule('musics.id', '=', $music->id()));
-
-            $musicData = $musicRepo->all($expression);
-            $musicDTO = !empty($musicData) ? MusicDTOMapper::fromArray($musicData[0]) : null;
 
             return $this->successResponse($musicDTO);
         }
@@ -78,11 +55,11 @@ class MusicController
         }
     }
 
-    public function delete(MusicDeleteRequest $request, MusicRepository $musicRepo)
+    public function delete(MusicDeleteRequest $request, DeleteMusicAction $action)
     {
         try
         {
-            $musicRepo->delete($request->validated('id'));
+            $action->execute($request->validated('id'));
             return $this->successResponse();
         }
         catch(Throwable $th)
@@ -93,39 +70,21 @@ class MusicController
 
     public function update(
         MusicUpdateRequest $request,
-        MusicRepository $musicRepo,
-        LyricsRepository $lyricsRepo,
-        CategoryRepository $categoryRepo
+        UpdateMusicAction $action
     ){
         try {
-            $musicId = $request->validated('id');
-            $existingMusic = $musicRepo->findById($musicId);
-
-            if (!$existingMusic) {
-                return $this->notFoundResponse('Music not found');
-            }
-
-            $lyricsId = $existingMusic->lyrics()->id();
-            if ($lyricsId) {
-                $lyrics = new Lyrics($lyricsId, $request->validated('lyrics'));
-                $lyricsRepo->update($lyrics);
-            } else {
-                $lyrics = $lyricsRepo->store(new Lyrics(null, $request->validated('lyrics')));
-            }
-
-            $category = $categoryRepo->findById($request->validated('categoryId'));
-
-            $music = new Music(
-                $musicId,
+            $updated = $action->execute(
+                $request->validated('id'),
                 $request->validated('name'),
                 $request->validated('artist'),
-                $lyrics,
-                $category
+                $request->validated('lyrics'),
+                $request->validated('categoryId'),
+                $request->has('tagIds'),
+                $request->validated('tagIds', [])
             );
-            $musicRepo->update($music);
 
-            if ($request->has('tagIds')) {
-                $musicRepo->syncTags($musicId, $request->validated('tagIds', []));
+            if (!$updated) {
+                return $this->notFoundResponse('Music not found');
             }
 
             return $this->successResponse();

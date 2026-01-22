@@ -2,13 +2,12 @@
 
 namespace App\Domains\Musical\Http\Controllers;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
+use App\Domains\Musical\Actions\Category\DeleteCategoryAction;
+use App\Domains\Musical\Actions\Category\ListCategoriesAction;
+use App\Domains\Musical\Actions\Category\StoreCategoryAction;
+use App\Domains\Musical\Actions\Category\UpdateCategoryAction;
 use App\Domains\Commons\Exceptions\DuplicateEntryException;
 use App\Domains\Commons\Http\ApiResponseTrait;
-use App\Domains\Musical\Database\CategoryRepository;
-use App\Domains\Musical\DTO\CategoryDTO;
-use App\Domains\Musical\Entities\Category;
 use App\Domains\Musical\Http\Requests\CategoryDeleteRequest;
 use App\Domains\Musical\Http\Requests\CategoryStoreRequest;
 use App\Domains\Musical\Http\Requests\CategoryUpdateRequest;
@@ -19,23 +18,21 @@ class CategoryController
 {
     use ApiResponseTrait;
     
-    public function index(Request $request, CategoryRepository $tagRepo)
+    public function index(Request $request, ListCategoriesAction $action)
     {
-        $expression = new QueryExpression();
-        $expression = $request->get('name', null) ? $expression->add(new QueryClausule('name', 'LIKE', "%{$request->get('name','')}%")) : $expression;
-        $expression = $request->get('id', null)   ? $expression->add(new QueryClausule("id", "=", $request->get('id')))                 : $expression;
+        $id = filter_var($request->get('id'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
 
-        return $this->successResponse($tagRepo->all($expression));
+        return $this->successResponse(
+            $action->execute($request->get('name'), $id)
+        );
     }
 
-    public function store(CategoryStoreRequest $request, CategoryRepository $tagRepo)
+    public function store(CategoryStoreRequest $request, StoreCategoryAction $action)
     {
         try
         {
-            $category = $tagRepo->store(new Category(null,$request->validated("name")));
-            $tagDTO = new CategoryDTO($category->id(), $category->name());
-
-            return $this->successResponse($tagDTO->toArray());
+            $categoryDTO = $action->execute($request->validated('name'));
+            return $this->successResponse($categoryDTO->toArray());
         }
         catch(DuplicateEntryException $e)
         {
@@ -43,11 +40,11 @@ class CategoryController
         }
     }
 
-    public function delete(CategoryDeleteRequest $request, CategoryRepository $tagRepo)
+    public function delete(CategoryDeleteRequest $request, DeleteCategoryAction $action)
     {
         try
         {
-            $tagRepo->delete($request->validated('id'));
+            $action->execute($request->validated('id'));
             return $this->successResponse();
         }
         catch(Throwable $th)
@@ -56,10 +53,9 @@ class CategoryController
         }
     }
 
-    public function update(CategoryUpdateRequest $request, CategoryRepository $tagRepo){
+    public function update(CategoryUpdateRequest $request, UpdateCategoryAction $action){
         try {
-            $category = new Category($request->post('id'), $request->post('name'));
-            $tagRepo->update($category);
+            $action->execute($request->validated('id'), $request->validated('name'));
             return $this->successResponse();
         } catch (\Throwable $th) {
             //throw $th;

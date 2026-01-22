@@ -2,17 +2,15 @@
 
 namespace App\Domains\Musical\Http\Controllers;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
+use App\Domains\Musical\Actions\Tag\DeleteTagAction;
+use App\Domains\Musical\Actions\Tag\ListTagsAction;
+use App\Domains\Musical\Actions\Tag\StoreTagAction;
+use App\Domains\Musical\Actions\Tag\UpdateTagAction;
 use App\Domains\Commons\Exceptions\DuplicateEntryException;
 use App\Domains\Commons\Http\ApiResponseTrait;
-use App\Domains\Musical\Database\TagRepository;
-use App\Domains\Musical\DTO\TagDTO;
-use App\Domains\Musical\Entities\Tag;
 use App\Domains\Musical\Http\Requests\DeleteTagRequest;
 use App\Domains\Musical\Http\Requests\TagRequest;
 use App\Domains\Musical\Http\Requests\UpdateTagRequest;
-use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Throwable;
 
@@ -20,22 +18,20 @@ class TagController
 {
     use ApiResponseTrait;
     
-    public function index(Request $request, TagRepository $tagRepo)
+    public function index(Request $request, ListTagsAction $action)
     {
-        $expression = new QueryExpression();
-        $expression = $request->get('name', null) ? $expression->add(new QueryClausule('name', 'LIKE', "%{$request->get('name','')}%")) : $expression;
-        $expression = $request->get('id', null)   ? $expression->add(new QueryClausule("id", "=", $request->get('id')))                 : $expression;
+        $id = filter_var($request->get('id'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
 
-        return $this->successResponse($tagRepo->all($expression));
+        return $this->successResponse(
+            $action->execute($request->get('name'), $id)
+        );
     }
 
-    public function store(TagRequest $request, TagRepository $tagRepo)
+    public function store(TagRequest $request, StoreTagAction $action)
     {
         try
         {
-            $tag = $tagRepo->store(new Tag(null,$request->validated("name")));
-            $tagDTO = new TagDTO($tag->id(), $tag->name());
-
+            $tagDTO = $action->execute($request->validated('name'));
             return $this->successResponse($tagDTO->toArray());
         }
         catch(DuplicateEntryException $e)
@@ -44,11 +40,11 @@ class TagController
         }
     }
 
-    public function delete(DeleteTagRequest $request, TagRepository $tagRepo)
+    public function delete(DeleteTagRequest $request, DeleteTagAction $action)
     {
         try
         {
-            $tagRepo->delete($request->validated('id'));
+            $action->execute($request->validated('id'));
             return $this->successResponse();
         }
         catch(Throwable $th)
@@ -57,10 +53,9 @@ class TagController
         }
     }
 
-    public function update(UpdateTagRequest $request, TagRepository $tagRepo){
+    public function update(UpdateTagRequest $request, UpdateTagAction $action){
         try {
-            $tag = new Tag($request->post('id'), $request->post('name'));
-            $tagRepo->update($tag);
+            $action->execute($request->validated('id'), $request->validated('name'));
             return $this->successResponse();
         } catch (\Throwable $th) {
             //throw $th;
