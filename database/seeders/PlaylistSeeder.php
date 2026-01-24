@@ -14,7 +14,9 @@ class PlaylistSeeder extends Seeder
     public function run(): void
     {
         DB::table('playlists')->insertOrIgnore([
-            ['name' => 'Repertório Padrão'],
+            ['name' => 'Repertório Padrão', 'user_id' => 1],
+            ['name' => 'Repertório Domingo', 'user_id' => 1],
+            ['name' => 'Repertório Ceia', 'user_id' => 1]
         ]);
     }
 }

@@ -725,6 +725,96 @@
               }
             }
           ]
+        },
+        {
+          "name": "Playlists",
+          "item": [
+            {
+              "name": "Playlists/Find",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/playlists?playlistName=Favorites&userId=1&page=1&perPage=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "playlists"],
+                  "query": [
+                    {"key": "playlistName", "value": "Favorites"},
+                    {"key": "userId", "value": "1"},
+                    {"key": "page", "value": "1"},
+                    {"key": "perPage", "value": "10"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Playlists/Show",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/playlists/show?id=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "playlists", "show"],
+                  "query": [
+                    {"key": "id", "value": "1"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Playlists/Store",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Favorites\",\n  \"musics\": [\n    {\"id\": 1, \"position\": 1},\n    {\"id\": 2, \"position\": 2}\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/playlists/store",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "playlists", "store"]
+                }
+              }
+            },
+            {
+              "name": "Playlists/Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"name\": \"Favorites Updated\",\n  \"musics\": [\n    {\"id\": 2, \"position\": 1},\n    {\"id\": 3, \"position\": 2}\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/playlists/update",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "playlists", "update"]
+                }
+              }
+            },
+            {
+              "name": "Playlists/Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/playlists/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "playlists", "delete"]
+                }
+              }
+            }
+          ]
         }
       ]
     }

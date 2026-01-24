@@ -97,6 +97,13 @@ List endpoints return `data.items` plus `data.pagination` and accept `page` and 
 - `PUT /musical/musicians/update` update musician
 - `DELETE /musical/musicians/delete` delete musician
 
+### Playlists
+- `GET /musical/playlists` list/filter playlists (playlistName, userId, page, perPage)
+- `GET /musical/playlists/show` fetch a single playlist by id
+- `POST /musical/playlists/store` create playlist (name, optional musics array)
+- `PUT /musical/playlists/update` update playlist (id, name, optional musics array)
+- `DELETE /musical/playlists/delete` delete playlist
+
 ### Musician skills
 - `GET /musical/musician-skills` list/filter musician skills (musicianId, skillId, page, perPage)
 - `GET /musical/musician-skills/show` fetch a musician-skill association (musicianId, skillId)

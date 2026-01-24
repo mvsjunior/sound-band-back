@@ -6,6 +6,7 @@ use App\Domains\Musical\Http\Controllers\LyricsController;
 use App\Domains\Musical\Http\Controllers\MusicController;
 use App\Domains\Musical\Http\Controllers\MusicianController;
 use App\Domains\Musical\Http\Controllers\MusicianSkillController;
+use App\Domains\Musical\Http\Controllers\PlaylistController;
 use App\Domains\Musical\Http\Controllers\SkillController;
 use App\Domains\Musical\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
@@ -59,4 +60,10 @@ Route::prefix('musical')->middleware('auth:api')->group(function () {
     Route::post('/musician-skills/store', [MusicianSkillController::class, 'store']);
     Route::put('/musician-skills/update', [MusicianSkillController::class, 'update']);
     Route::delete('/musician-skills/delete', [MusicianSkillController::class, 'delete']);
+
+    Route::get('/playlists', [PlaylistController::class, 'index']);
+    Route::get('/playlists/show', [PlaylistController::class, 'show']);
+    Route::post('/playlists/store', [PlaylistController::class, 'store']);
+    Route::put('/playlists/update', [PlaylistController::class, 'update']);
+    Route::delete('/playlists/delete', [PlaylistController::class, 'delete']);
 });

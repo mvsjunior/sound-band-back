@@ -89,6 +89,14 @@ All routes are under `/api/musical`.
 - `PUT /musical/musicians/update`
 - `DELETE /musical/musicians/delete`
 
+### Playlists
+- `GET /musical/playlists` list/filter playlists
+  - Query: `playlistName`, `userId`, `page`, `perPage`
+- `GET /musical/playlists/show` by `id`
+- `POST /musical/playlists/store` (`name`, optional `musics[]`)
+- `PUT /musical/playlists/update` (`id`, `name`, optional `musics[]`)
+- `DELETE /musical/playlists/delete` (`id`)
+
 ### Skills
 - `GET /musical/skills` list/filter skills
   - Query: `name`, `id`, `page`, `perPage`
@@ -111,6 +119,7 @@ Represents many-to-many between musicians and skills.
 - `MusicianSkillDTO`: `{ musicianId, musicianName, skillId, skillName }`
 - `MusicianDTO`: `{ id, name, email, phone, status: { id, name } }`
 - `MusicianDTO` now includes `skills[]`: `{ id, name, email, phone, status: { id, name }, skills: [{ id, name }] }`
+- `PlaylistDTO`: `{ id, name, userId, userName, musics: [{ id, name, position }] }`
 - `MusicDTO`: `{ id, name, artist, category, lyrics, tags[], chords[] }`
 
 ## Front-End Implementation Suggestions
