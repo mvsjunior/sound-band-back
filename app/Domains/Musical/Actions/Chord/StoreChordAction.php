@@ -2,29 +2,37 @@
 
 namespace App\Domains\Musical\Actions\Chord;
 
-use App\Domains\Musical\Database\ChordRepository;
-use App\Domains\Musical\Entities\Chord;
-use App\Domains\Musical\Entities\ChordContent;
+use App\Domains\Musical\Database\Models\Chord;
+use App\Domains\Musical\Database\Models\ChordContent;
 use App\Domains\Musical\Mappers\ChordDTOMapper;
+use Illuminate\Support\Facades\DB;
 
 class StoreChordAction
 {
-    public function __construct(private ChordRepository $chords)
+    public function execute(int $musicId, string $tone, string $content, string $version)
     {
-    }
+        $chord = DB::transaction(function () use ($musicId, $tone, $content, $version) {
+            $contentModel = ChordContent::create(['content' => $content]);
 
-    public function execute(int $musicId, int $toneId, string $content, string $version)
-    {
-        $chord = new Chord(
-            null,
-            $musicId,
-            $toneId,
-            null,
-            $version
-        );
-        $contentEntity = new ChordContent(null, $content);
+            return Chord::create([
+                'music_id' => $musicId,
+                'tone' => $tone,
+                'chord_content_id' => $contentModel->id,
+                'version' => $version,
+            ]);
+        });
 
-        $chordData = $this->chords->store($chord, $contentEntity);
+        $chord->load(['chordContent:id,content']);
+
+        $chordData = [
+            'id' => $chord->id,
+            'music_id' => $chord->music_id,
+            'tone_id' => 0,
+            'version' => $chord->version,
+            'chord_content' => $chord->chordContent?->content,
+            'tone_name' => $chord->tone ?? '',
+            'tone_type' => $chord->tone ?? '',
+        ];
 
         return ChordDTOMapper::fromArray($chordData);
     }

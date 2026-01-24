@@ -29,15 +29,21 @@ Backend for the Sound Band platform. It centralizes authentication and musical c
 - Lyrics: stored as long text and referenced by music.
 - Tags: many-to-many with music.
 - Chords: version metadata for each music (one music has many chords).
-- Tone: key signature metadata (name + type) used by chords.
+- Chords tone: enum value (e.g. `C`, `C#`, `D`, `Eb`, `E`, `F`, `F#`, `G`, `Ab`, `A`, `Bb`, `B`, `Cm`, `C#m`, `Dm`, `Ebm`, `Em`, `Fm`, `F#m`, `Gm`, `Abm`, `Am`, `Bbm`, `Bm`).
+- Tone: key signature metadata (tone enum + type).
 - Chord content: detailed chord sheet stored separately from chord metadata.
+- Musicians: roster with status, contact details.
+- Skills: catalog of musician abilities/roles.
+- Musician skills: many-to-many associations between musicians and skills.
 
 #### Relationships
 - Music belongs to one category and one lyrics.
 - Music has many tags (pivot table `musics_tags`).
 - Music has many chords.
-- Chord belongs to one music and one tone.
+- Chord belongs to one music and has a tone enum.
 - Chord has one chord content.
+- Musician belongs to one status.
+- Musician has many skills (pivot table `musician_skill`).
 
 #### Chords flow
 - List music: includes chord metadata (id, version, tone) for quick browsing.
@@ -47,36 +53,56 @@ Backend for the Sound Band platform. It centralizes authentication and musical c
 
 Base URL: `/api`
 
+List endpoints return `data.items` plus `data.pagination` and accept `page` and `perPage` query params.
+
 ### Music
-- `GET /musical/music` list/filter music (name, artist, categoryId, id)
+- `GET /musical/music` list/filter music (name, artist, categoryId, id, page, perPage)
+- `GET /musical/music/show` fetch a single music by id
 - `POST /musical/music/store` create music
 - `PUT /musical/music/update` update music
 - `DELETE /musical/music/delete` delete music
 
 ### Categories
-- `GET /musical/category`
+- `GET /musical/category` (page, perPage)
+- `GET /musical/category/show`
 - `POST /musical/category/store`
 - `PUT /musical/category/update`
 - `DELETE /musical/category/delete`
 
 ### Tags
-- `GET /musical/tags`
+- `GET /musical/tags` (page, perPage)
+- `GET /musical/tags/show`
 - `POST /musical/tags/store`
 - `PUT /musical/tags/update`
 - `DELETE /musical/tags/delete`
 
 ### Lyrics
-- `GET /musical/lyrics`
+- `GET /musical/lyrics` (page, perPage)
+- `GET /musical/lyrics/show`
 - `POST /musical/lyrics/store`
 - `PUT /musical/lyrics/update`
 - `DELETE /musical/lyrics/delete`
 
 ### Chords
-- `GET /musical/chords` list chords (filters: id, musicId, toneId)
+- `GET /musical/chords` list chords (filters: id, musicId, tone, page, perPage)
 - `GET /musical/chords/show` chord detail (includes content)
 - `POST /musical/chords/store` create chord
 - `PUT /musical/chords/update` update chord
 - `DELETE /musical/chords/delete` delete chord
+
+### Musicians
+- `GET /musical/musicians` list/filter musicians (name, email, phone, statusId, id, page, perPage)
+- `GET /musical/musicians/show` fetch a single musician by id
+- `POST /musical/musicians/store` create musician
+- `PUT /musical/musicians/update` update musician
+- `DELETE /musical/musicians/delete` delete musician
+
+### Musician skills
+- `GET /musical/musician-skills` list/filter musician skills (musicianId, skillId, page, perPage)
+- `GET /musical/musician-skills/show` fetch a musician-skill association (musicianId, skillId)
+- `POST /musical/musician-skills/store` create a musician-skill association
+- `PUT /musical/musician-skills/update` update a musician-skill association
+- `DELETE /musical/musician-skills/delete` delete a musician-skill association
 
 ## Testing
 

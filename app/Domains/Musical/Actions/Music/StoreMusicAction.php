@@ -2,24 +2,13 @@
 
 namespace App\Domains\Musical\Actions\Music;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
-use App\Domains\Musical\Database\CategoryRepository;
-use App\Domains\Musical\Database\LyricsRepository;
-use App\Domains\Musical\Database\MusicRepository;
-use App\Domains\Musical\Entities\Lyrics;
-use App\Domains\Musical\Entities\Music;
+use App\Domains\Musical\Database\Models\Lyrics;
+use App\Domains\Musical\Database\Models\Music;
 use App\Domains\Musical\Mappers\MusicDTOMapper;
+use Illuminate\Support\Facades\DB;
 
 class StoreMusicAction
 {
-    public function __construct(
-        private MusicRepository $musics,
-        private LyricsRepository $lyrics,
-        private CategoryRepository $categories
-    ) {
-    }
-
     public function execute(
         string $name,
         string $artist,
@@ -27,28 +16,52 @@ class StoreMusicAction
         int $categoryId,
         array $tagIds = []
     ) {
-        $lyrics = $this->lyrics->store(new Lyrics(null, $lyricsContent));
-        $category = $this->categories->findById($categoryId);
+        $music = DB::transaction(function () use ($name, $artist, $lyricsContent, $categoryId, $tagIds) {
+            $lyrics = Lyrics::create(['content' => $lyricsContent]);
 
-        $music = new Music(
-            null,
-            $name,
-            $artist,
-            $lyrics,
-            $category
-        );
+            $music = Music::create([
+                'name' => $name,
+                'artist' => $artist,
+                'lyrics_id' => $lyrics->id,
+                'category_id' => $categoryId,
+            ]);
 
-        $music = $this->musics->store($music);
+            if (!empty($tagIds)) {
+                $music->tags()->sync($tagIds);
+            }
 
-        if (!empty($tagIds)) {
-            $this->musics->syncTags($music->id(), $tagIds);
-        }
+            return $music;
+        });
 
-        $expression = (new QueryExpression())
-            ->add(new QueryClausule('musics.id', '=', $music->id()));
+        $music->load([
+            'category:id,name',
+            'lyrics:id,content',
+            'tags:id,name',
+            'chords:id,music_id,tone,version',
+        ]);
 
-        $musicData = $this->musics->all($expression);
+        $musicData = [
+            'id' => $music->id,
+            'name' => $music->name,
+            'artist' => $music->artist ?? '',
+            'category_id' => $music->category?->id,
+            'category_name' => $music->category?->name ?? '',
+            'lyrics_id' => $music->lyrics?->id,
+            'lyrics_content' => $music->lyrics?->content ?? '',
+            'tags' => $music->tags->map(fn ($tag) => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+            ])->all(),
+            'chords' => $music->chords->map(fn ($chord) => [
+                'id' => $chord->id,
+                'music_id' => $chord->music_id,
+                'version' => $chord->version,
+                'tone_id' => 0,
+                'tone_name' => $chord->tone ?? '',
+                'tone_type' => $chord->tone ?? '',
+            ])->all(),
+        ];
 
-        return !empty($musicData) ? MusicDTOMapper::fromArray($musicData[0]) : null;
+        return MusicDTOMapper::fromArray($musicData);
     }
 }

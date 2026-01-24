@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name', 200);
             $table->string('artist', 200)->nullable();
 
-            $table->foreignId('lyrics_id')->nullable()->constrained('lyrics');
+            $table->foreignId('lyrics_id')->nullable()->constrained('lyrics')->cascadeOnDelete();
             $table->foreignId('category_id')->constrained('music_categories');
 
             $table->timestamps();

@@ -4,10 +4,13 @@ namespace App\Domains\Musical\Http\Controllers;
 
 use App\Domains\Musical\Actions\Music\DeleteMusicAction;
 use App\Domains\Musical\Actions\Music\ListMusicsAction;
+use App\Domains\Musical\Actions\Music\ShowMusicAction;
 use App\Domains\Musical\Actions\Music\StoreMusicAction;
 use App\Domains\Musical\Actions\Music\UpdateMusicAction;
 use App\Domains\Commons\Http\ApiResponseTrait;
+use App\Domains\Commons\Http\ResolvesPagination;
 use App\Domains\Musical\Http\Requests\MusicDeleteRequest;
+use App\Domains\Musical\Http\Requests\MusicShowRequest;
 use App\Domains\Musical\Http\Requests\MusicStoreRequest;
 use App\Domains\Musical\Http\Requests\MusicUpdateRequest;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,18 +19,22 @@ use Throwable;
 class MusicController
 {
     use ApiResponseTrait;
+    use ResolvesPagination;
     
     public function index(Request $request, ListMusicsAction $action)
     {
         $categoryId = filter_var($request->get('categoryId'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
         $id = filter_var($request->get('id'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+        [$page, $perPage] = $this->resolvePagination($request);
 
         return $this->successResponse(
             $action->execute(
                 $request->get('name'),
                 $request->get('artist'),
                 $categoryId,
-                $id
+                $id,
+                $page,
+                $perPage
             )
         );
     }
@@ -53,6 +60,17 @@ class MusicController
         {
             return $this->errorResponse($th->getMessage());
         }
+    }
+
+    public function show(MusicShowRequest $request, ShowMusicAction $action)
+    {
+        $musicDTO = $action->execute($request->validated('id'));
+
+        if (!$musicDTO) {
+            return $this->notFoundResponse('Music not found');
+        }
+
+        return $this->successResponse($musicDTO);
     }
 
     public function delete(MusicDeleteRequest $request, DeleteMusicAction $action)

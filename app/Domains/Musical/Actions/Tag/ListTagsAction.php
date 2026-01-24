@@ -2,28 +2,33 @@
 
 namespace App\Domains\Musical\Actions\Tag;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
-use App\Domains\Musical\Database\TagRepository;
+use App\Domains\Musical\Database\Models\Tag;
 
 class ListTagsAction
 {
-    public function __construct(private TagRepository $tags)
+    public function execute(?string $name, ?int $id, int $page, int $perPage): array
     {
-    }
+        $query = Tag::query()
+            ->select(['id', 'name'])
+            ->when($name !== null && $name !== '', function ($query) use ($name) {
+                return $query->where('name', 'LIKE', "%{$name}%");
+            })
+            ->when($id, function ($query) use ($id) {
+                return $query->where('id', '=', $id);
+            })
+            ->orderBy('id');
 
-    public function execute(?string $name, ?int $id): array
-    {
-        $expression = new QueryExpression();
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+        $items = $paginated->getCollection()->map(fn (Tag $tag) => $tag->toArray())->all();
 
-        if ($name !== null && $name !== '') {
-            $expression = $expression->add(new QueryClausule('name', 'LIKE', "%{$name}%"));
-        }
-
-        if ($id) {
-            $expression = $expression->add(new QueryClausule('id', '=', $id));
-        }
-
-        return $this->tags->all($expression);
+        return [
+            'items' => $items,
+            'pagination' => [
+                'page' => $paginated->currentPage(),
+                'perPage' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'lastPage' => $paginated->lastPage(),
+            ],
+        ];
     }
 }

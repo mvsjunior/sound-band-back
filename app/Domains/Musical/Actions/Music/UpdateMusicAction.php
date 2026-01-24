@@ -2,21 +2,12 @@
 
 namespace App\Domains\Musical\Actions\Music;
 
-use App\Domains\Musical\Database\CategoryRepository;
-use App\Domains\Musical\Database\LyricsRepository;
-use App\Domains\Musical\Database\MusicRepository;
-use App\Domains\Musical\Entities\Lyrics;
-use App\Domains\Musical\Entities\Music;
+use App\Domains\Musical\Database\Models\Lyrics;
+use App\Domains\Musical\Database\Models\Music;
+use Illuminate\Support\Facades\DB;
 
 class UpdateMusicAction
 {
-    public function __construct(
-        private MusicRepository $musics,
-        private LyricsRepository $lyrics,
-        private CategoryRepository $categories
-    ) {
-    }
-
     public function execute(
         int $id,
         string $name,
@@ -26,35 +17,44 @@ class UpdateMusicAction
         bool $syncTags,
         array $tagIds = []
     ): bool {
-        $existingMusic = $this->musics->findById($id);
+        $updated = false;
 
-        if (!$existingMusic) {
-            return false;
-        }
-
-        $lyricsId = $existingMusic->lyrics()->id();
-        if ($lyricsId) {
-            $lyrics = new Lyrics($lyricsId, $lyricsContent);
-            $this->lyrics->update($lyrics);
-        } else {
-            $lyrics = $this->lyrics->store(new Lyrics(null, $lyricsContent));
-        }
-
-        $category = $this->categories->findById($categoryId);
-
-        $music = new Music(
+        DB::transaction(function () use (
             $id,
             $name,
             $artist,
-            $lyrics,
-            $category
-        );
-        $this->musics->update($music);
+            $lyricsContent,
+            $categoryId,
+            $syncTags,
+            $tagIds,
+            &$updated
+        ) {
+            $music = Music::query()->select(['id', 'lyrics_id'])->find($id);
+            if (!$music) {
+                return;
+            }
 
-        if ($syncTags) {
-            $this->musics->syncTags($id, $tagIds);
-        }
+            if ($music->lyrics_id) {
+                Lyrics::query()->whereKey($music->lyrics_id)->update([
+                    'content' => $lyricsContent,
+                ]);
+            } else {
+                $lyrics = Lyrics::create(['content' => $lyricsContent]);
+                $music->lyrics_id = $lyrics->id;
+            }
 
-        return true;
+            $music->name = $name;
+            $music->artist = $artist;
+            $music->category_id = $categoryId;
+            $music->save();
+
+            if ($syncTags) {
+                $music->tags()->sync($tagIds);
+            }
+
+            $updated = true;
+        });
+
+        return $updated;
     }
 }

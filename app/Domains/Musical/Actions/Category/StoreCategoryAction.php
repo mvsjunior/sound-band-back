@@ -2,20 +2,26 @@
 
 namespace App\Domains\Musical\Actions\Category;
 
-use App\Domains\Musical\Database\CategoryRepository;
+use App\Domains\Commons\Exceptions\DuplicateEntryException;
+use App\Domains\Musical\Database\Models\Category;
 use App\Domains\Musical\DTO\CategoryDTO;
-use App\Domains\Musical\Entities\Category;
+use Illuminate\Database\QueryException;
 
 class StoreCategoryAction
 {
-    public function __construct(private CategoryRepository $categories)
-    {
-    }
-
     public function execute(string $name): CategoryDTO
     {
-        $category = $this->categories->store(new Category(null, $name));
+        try {
+            $category = Category::create(['name' => $name]);
+        } catch (QueryException $e) {
+            $errorCode = $e->errorInfo[1] ?? null;
+            if ($errorCode === 1062) {
+                throw new DuplicateEntryException("The category name '{$name}' is already in use.");
+            }
 
-        return new CategoryDTO($category->id(), $category->name());
+            throw $e;
+        }
+
+        return new CategoryDTO($category->id, $category->name);
     }
 }

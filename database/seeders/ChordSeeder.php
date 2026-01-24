@@ -13,12 +13,9 @@ class ChordSeeder extends Seeder
     public function run(): void
     {
         $musicId = DB::table('musics')->value('id');
-        $toneId = DB::table('tones')
-            ->where('name', '=', 'Gm')
-            ->where('type', '=', 'minor')
-            ->value('id');
+        $tone = 'C#';
 
-        if (!$musicId || !$toneId) {
+        if (!$musicId) {
             return;
         }
 
@@ -36,7 +33,7 @@ class ChordSeeder extends Seeder
 
         $exists = DB::table('chords')
             ->where('music_id', '=', $musicId)
-            ->where('tone_id', '=', $toneId)
+            ->where('tone', '=', $tone)
             ->where('chord_content_id', '=', $contentId)
             ->exists();
 
@@ -45,7 +42,7 @@ class ChordSeeder extends Seeder
         }
 
         DB::table('chords')->insert([
-            'tone_id' => $toneId,
+            'tone' => $tone,
             'chord_content_id' => $contentId,
             'music_id' => $musicId,
             'version' => 'Guitar version in Gm',

@@ -11,7 +11,6 @@ class ChordRoutesTest extends TestCase
     use RefreshDatabase;
 
     private static int $categorySequence = 1;
-    private static int $toneSequence = 1;
 
     private function seedCategory(?string $name = null): int
     {
@@ -19,16 +18,6 @@ class ChordRoutesTest extends TestCase
 
         return DB::table('music_categories')->insertGetId([
             'name' => $name,
-        ]);
-    }
-
-    private function seedTone(?string $name = null, string $type = 'major'): int
-    {
-        $name = $name ?? ('Tone ' . self::$toneSequence++);
-
-        return DB::table('tones')->insertGetId([
-            'name' => $name,
-            'type' => $type,
         ]);
     }
 
@@ -73,7 +62,7 @@ class ChordRoutesTest extends TestCase
 
         $data = array_merge([
             'music_id' => $this->seedMusic(),
-            'tone_id' => $this->seedTone(),
+            'tone' => $overrides['tone'] ?? 'major',
             'chord_content_id' => $contentId,
             'version' => $overrides['version'] ?? 'Guitar version in Gm',
         ], $overrides);
@@ -86,7 +75,6 @@ class ChordRoutesTest extends TestCase
         $musicId = $this->seedMusic([
             'name' => 'Chorded song',
         ]);
-        $toneId = $this->seedTone('Gm', 'minor');
 
         $contentId = DB::table('chord_contents')->insertGetId([
             'content' => 'Chord content',
@@ -96,7 +84,7 @@ class ChordRoutesTest extends TestCase
 
         $chordId = DB::table('chords')->insertGetId([
             'music_id' => $musicId,
-            'tone_id' => $toneId,
+            'tone' => 'minor',
             'chord_content_id' => $contentId,
             'version' => 'Guitar version in Gm',
         ]);
@@ -109,15 +97,14 @@ class ChordRoutesTest extends TestCase
                 'success' => true,
             ]);
 
-        $this->assertSame($musicId, $response->json('data.0.id'));
-        $this->assertCount(1, $response->json('data.0.chords'));
-        $this->assertSame($chordId, $response->json('data.0.chords.0.id'));
+        $this->assertSame($musicId, $response->json('data.items.0.id'));
+        $this->assertCount(1, $response->json('data.items.0.chords'));
+        $this->assertSame($chordId, $response->json('data.items.0.chords.0.id'));
     }
 
     public function test_can_list_chords(): void
     {
         $musicId = $this->seedMusic();
-        $toneId = $this->seedTone();
         $contentId = DB::table('chord_contents')->insertGetId([
             'content' => 'Chord content',
             'created_at' => now(),
@@ -126,7 +113,7 @@ class ChordRoutesTest extends TestCase
 
         $chordId = DB::table('chords')->insertGetId([
             'music_id' => $musicId,
-            'tone_id' => $toneId,
+            'tone' => 'major',
             'chord_content_id' => $contentId,
             'version' => 'Guitar version in Gm',
         ]);
@@ -139,8 +126,8 @@ class ChordRoutesTest extends TestCase
                 'success' => true,
             ]);
 
-        $this->assertCount(1, $response->json('data'));
-        $this->assertSame($chordId, $response->json('data.0.id'));
+        $this->assertCount(1, $response->json('data.items'));
+        $this->assertSame($chordId, $response->json('data.items.0.id'));
     }
 
     public function test_can_show_chord_details(): void
@@ -163,11 +150,10 @@ class ChordRoutesTest extends TestCase
     public function test_can_store_chord(): void
     {
         $musicId = $this->seedMusic();
-        $toneId = $this->seedTone();
 
         $payload = [
             'musicId' => $musicId,
-            'toneId' => $toneId,
+            'tone' => 'major',
             'version' => 'Guitar version in Gm',
             'content' => 'Chord content',
         ];
@@ -185,7 +171,7 @@ class ChordRoutesTest extends TestCase
 
         $this->assertDatabaseHas('chords', [
             'music_id' => $musicId,
-            'tone_id' => $toneId,
+            'tone' => 'major',
             'version' => 'Guitar version in Gm',
         ]);
 
@@ -197,10 +183,9 @@ class ChordRoutesTest extends TestCase
     public function test_can_update_chord(): void
     {
         $musicId = $this->seedMusic();
-        $toneId = $this->seedTone();
         $chordId = $this->seedChord([
             'music_id' => $musicId,
-            'tone_id' => $toneId,
+            'tone' => 'minor',
             'content' => 'Old content',
             'version' => 'Old version',
         ]);
@@ -208,7 +193,7 @@ class ChordRoutesTest extends TestCase
         $payload = [
             'id' => $chordId,
             'musicId' => $musicId,
-            'toneId' => $toneId,
+            'tone' => 'major',
             'version' => 'Updated version',
             'content' => 'Updated content',
         ];
@@ -224,6 +209,7 @@ class ChordRoutesTest extends TestCase
         $this->assertDatabaseHas('chords', [
             'id' => $chordId,
             'version' => 'Updated version',
+            'tone' => 'major',
         ]);
 
         $contentId = DB::table('chords')->where('id', '=', $chordId)->value('chord_content_id');

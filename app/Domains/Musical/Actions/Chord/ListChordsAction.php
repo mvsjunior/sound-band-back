@@ -2,36 +2,49 @@
 
 namespace App\Domains\Musical\Actions\Chord;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
-use App\Domains\Musical\Database\ChordRepository;
+use App\Domains\Musical\Database\Models\Chord;
 use App\Domains\Musical\Mappers\ChordDTOMapper;
 
 class ListChordsAction
 {
-    public function __construct(private ChordRepository $chords)
+    public function execute(?int $id, ?int $musicId, ?string $tone, int $page, int $perPage): array
     {
-    }
+        $query = Chord::query()
+            ->select(['id', 'music_id', 'tone', 'version'])
+            ->when($id, function ($query) use ($id) {
+                return $query->where('id', '=', $id);
+            })
+            ->when($musicId, function ($query) use ($musicId) {
+                return $query->where('music_id', '=', $musicId);
+            })
+            ->when($tone !== null && $tone !== '', function ($query) use ($tone) {
+                return $query->where('tone', '=', $tone);
+            })
+            ->orderBy('id');
 
-    public function execute(?int $id, ?int $musicId, ?int $toneId): array
-    {
-        $expression = new QueryExpression();
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+        $items = $paginated->getCollection()->map(function (Chord $chord) {
+            return [
+                'id' => $chord->id,
+                'music_id' => $chord->music_id,
+                'tone_id' => 0,
+                'version' => $chord->version,
+                'tone_name' => $chord->tone ?? '',
+                'tone_type' => $chord->tone ?? '',
+            ];
+        })->all();
 
-        if ($id) {
-            $expression = $expression->add(new QueryClausule('chords.id', '=', $id));
-        }
-
-        if ($musicId) {
-            $expression = $expression->add(new QueryClausule('chords.music_id', '=', $musicId));
-        }
-
-        if ($toneId) {
-            $expression = $expression->add(new QueryClausule('chords.tone_id', '=', $toneId));
-        }
-
-        return array_map(
-            fn (array $chord) => ChordDTOMapper::fromArray($chord),
-            $this->chords->all($expression)
-        );
+        return [
+            'items' => array_map(
+                fn (array $chord) => ChordDTOMapper::fromArray($chord),
+                $items
+            ),
+            'pagination' => [
+                'page' => $paginated->currentPage(),
+                'perPage' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'lastPage' => $paginated->lastPage(),
+            ],
+        ];
     }
 }

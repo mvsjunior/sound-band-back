@@ -2,16 +2,12 @@
 
 namespace App\Domains\Musical\Actions\Tag;
 
-use App\Domains\Musical\Database\TagRepository;
+use App\Domains\Musical\Database\Models\Tag;
 
 class DeleteTagAction
 {
-    public function __construct(private TagRepository $tags)
-    {
-    }
-
     public function execute(int $id): void
     {
-        $this->tags->delete($id);
+        Tag::query()->whereKey($id)->delete();
     }
 }

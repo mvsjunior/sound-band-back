@@ -31,6 +31,33 @@ class TagEloquentRepository
         return $query->get()->toArray();
     }
 
+    public function paginate(?QueryExpression $expressions, int $page, int $perPage): array
+    {
+        $query = $this->db->select();
+
+        if ($expressions) {
+            foreach ($expressions->expressions as $clausule) {
+                $query = !empty($clausule)
+                    ? $query->where($clausule->column, $clausule->operator, $clausule->value)
+                    : $query;
+            }
+        }
+
+        $query->orderBy('id');
+        $total = (clone $query)->count();
+        $items = $query->forPage($page, $perPage)->get()->toArray();
+
+        return [
+            'items' => $items,
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total,
+                'lastPage' => $perPage > 0 ? (int) ceil($total / $perPage) : 0,
+            ],
+        ];
+    }
+
     public function getByMusicId(int | array $ids){
         $db = DB::table('musics_tags');
 

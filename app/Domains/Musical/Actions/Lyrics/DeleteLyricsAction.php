@@ -2,16 +2,12 @@
 
 namespace App\Domains\Musical\Actions\Lyrics;
 
-use App\Domains\Musical\Database\LyricsRepository;
+use App\Domains\Musical\Database\Models\Lyrics;
 
 class DeleteLyricsAction
 {
-    public function __construct(private LyricsRepository $lyrics)
-    {
-    }
-
     public function execute(int $id): void
     {
-        $this->lyrics->delete($id);
+        Lyrics::query()->whereKey($id)->delete();
     }
 }

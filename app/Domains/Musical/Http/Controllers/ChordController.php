@@ -8,6 +8,7 @@ use App\Domains\Musical\Actions\Chord\ShowChordAction;
 use App\Domains\Musical\Actions\Chord\StoreChordAction;
 use App\Domains\Musical\Actions\Chord\UpdateChordAction;
 use App\Domains\Commons\Http\ApiResponseTrait;
+use App\Domains\Commons\Http\ResolvesPagination;
 use App\Domains\Musical\Http\Requests\ChordDeleteRequest;
 use App\Domains\Musical\Http\Requests\ChordShowRequest;
 use App\Domains\Musical\Http\Requests\ChordStoreRequest;
@@ -18,15 +19,17 @@ use Throwable;
 class ChordController
 {
     use ApiResponseTrait;
+    use ResolvesPagination;
 
     public function index(Request $request, ListChordsAction $action)
     {
         $id = filter_var($request->get('id'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
         $musicId = filter_var($request->get('musicId'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
-        $toneId = filter_var($request->get('toneId'), FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+        $tone = $request->get('tone');
+        [$page, $perPage] = $this->resolvePagination($request);
 
         return $this->successResponse(
-            $action->execute($id, $musicId, $toneId)
+            $action->execute($id, $musicId, $tone, $page, $perPage)
         );
     }
 
@@ -46,7 +49,7 @@ class ChordController
         try {
             $chordDTO = $action->execute(
                 $request->validated('musicId'),
-                $request->validated('toneId'),
+                $request->validated('tone'),
                 $request->validated('content'),
                 $request->validated('version')
             );
@@ -63,7 +66,7 @@ class ChordController
             $action->execute(
                 $request->validated('id'),
                 $request->validated('musicId'),
-                $request->validated('toneId'),
+                $request->validated('tone'),
                 $request->validated('content'),
                 $request->validated('version')
             );

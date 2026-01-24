@@ -19,83 +19,27 @@ class MusicEloquentRepository
 
     public function all(?QueryExpression $expressions = null): array
     {
-        $query = $this->db->select([
-            "musics.id",
-            "musics.name",
-            "musics.artist",
-            "musics.lyrics_id",
-            "lyrics.content as lyrics_content",
-            "musics.category_id",
-            "music_categories.name AS category_name",
-        ]);
-        
-        if($expressions){
-            foreach($expressions->expressions as $key => $clausule){
-                $query = !empty($clausule) ? $query->where($clausule->column, $clausule->operator, $clausule->value) : $query;
-            }
-        }
+        $arrayMusics = $this->baseQuery($expressions)->get()->toArray();
 
-        $query->leftJoin('lyrics', 'musics.lyrics_id', '=', 'lyrics.id');
-        $query->join('music_categories', 'musics.category_id', '=', 'music_categories.id');
+        return $this->attachRelations($arrayMusics);
+    }
 
-        $arrayMusics = $query->get()->toArray();
+    public function paginate(?QueryExpression $expressions, int $page, int $perPage): array
+    {
+        $query = $this->baseQuery($expressions)->orderBy('musics.id');
+        $total = (clone $query)->count();
+        $arrayMusics = $query->forPage($page, $perPage)->get()->toArray();
+        $items = $this->attachRelations($arrayMusics);
 
-        if (empty($arrayMusics)) {
-            return [];
-        }
-
-        $musicIds = array_map(fn ($music) => $music->id, $arrayMusics);
-
-        $tags = DB::table('musics_tags')
-            ->select(['musics_tags.music_id', 'tags.id', 'tags.name'])
-            ->join('tags', 'musics_tags.tag_id', '=', 'tags.id')
-            ->whereIn('musics_tags.music_id', $musicIds)
-            ->get()
-            ->toArray();
-
-        $tagsByMusic = [];
-        foreach ($tags as $tag) {
-            $tagsByMusic[$tag->music_id][] = [
-                'id' => $tag->id,
-                'name' => $tag->name,
-            ];
-        }
-
-        $chords = DB::table('chords')
-            ->select([
-                'chords.id',
-                'chords.music_id',
-                'chords.version',
-                'chords.tone_id',
-                'tones.name as tone_name',
-                'tones.type as tone_type',
-            ])
-            ->join('tones', 'chords.tone_id', '=', 'tones.id')
-            ->whereIn('chords.music_id', $musicIds)
-            ->get()
-            ->toArray();
-
-        $chordsByMusic = [];
-        foreach ($chords as $chord) {
-            $chordsByMusic[$chord->music_id][] = [
-                'id' => $chord->id,
-                'music_id' => $chord->music_id,
-                'version' => $chord->version,
-                'tone_id' => $chord->tone_id,
-                'tone_name' => $chord->tone_name,
-                'tone_type' => $chord->tone_type,
-            ];
-        }
-
-        return array_map(
-            function($music) use($tagsByMusic, $chordsByMusic) {
-                $musicArray = (array) $music;
-                $musicArray['tags'] = $tagsByMusic[$music->id] ?? [];
-                $musicArray['chords'] = $chordsByMusic[$music->id] ?? [];
-                return $musicArray;
-            },
-            $arrayMusics
-        );
+        return [
+            'items' => $items,
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total,
+                'lastPage' => $perPage > 0 ? (int) ceil($total / $perPage) : 0,
+            ],
+        ];
     }
 
     public function findById(int $id): ?Music
@@ -182,5 +126,90 @@ class MusicEloquentRepository
         );
 
         $pivot->insert($rows);
+    }
+
+    private function baseQuery(?QueryExpression $expressions = null): Builder
+    {
+        $query = $this->db->select([
+            "musics.id",
+            "musics.name",
+            "musics.artist",
+            "musics.lyrics_id",
+            "lyrics.content as lyrics_content",
+            "musics.category_id",
+            "music_categories.name AS category_name",
+        ]);
+
+        if ($expressions) {
+            foreach ($expressions->expressions as $clausule) {
+                $query = !empty($clausule)
+                    ? $query->where($clausule->column, $clausule->operator, $clausule->value)
+                    : $query;
+            }
+        }
+
+        return $query
+            ->leftJoin('lyrics', 'musics.lyrics_id', '=', 'lyrics.id')
+            ->join('music_categories', 'musics.category_id', '=', 'music_categories.id');
+    }
+
+    private function attachRelations(array $arrayMusics): array
+    {
+        if (empty($arrayMusics)) {
+            return [];
+        }
+
+        $musicIds = array_map(fn ($music) => $music->id, $arrayMusics);
+
+        $tags = DB::table('musics_tags')
+            ->select(['musics_tags.music_id', 'tags.id', 'tags.name'])
+            ->join('tags', 'musics_tags.tag_id', '=', 'tags.id')
+            ->whereIn('musics_tags.music_id', $musicIds)
+            ->get()
+            ->toArray();
+
+        $tagsByMusic = [];
+        foreach ($tags as $tag) {
+            $tagsByMusic[$tag->music_id][] = [
+                'id' => $tag->id,
+                'name' => $tag->name,
+            ];
+        }
+
+        $chords = DB::table('chords')
+            ->select([
+                'chords.id',
+                'chords.music_id',
+                'chords.version',
+                'chords.tone_id',
+                'tones.name as tone_name',
+                'tones.type as tone_type',
+            ])
+            ->join('tones', 'chords.tone_id', '=', 'tones.id')
+            ->whereIn('chords.music_id', $musicIds)
+            ->get()
+            ->toArray();
+
+        $chordsByMusic = [];
+        foreach ($chords as $chord) {
+            $chordsByMusic[$chord->music_id][] = [
+                'id' => $chord->id,
+                'music_id' => $chord->music_id,
+                'version' => $chord->version,
+                'tone_id' => $chord->tone_id,
+                'tone_name' => $chord->tone_name,
+                'tone_type' => $chord->tone_type,
+            ];
+        }
+
+        return array_map(
+            function ($music) use ($tagsByMusic, $chordsByMusic) {
+                $musicArray = (array) $music;
+                $musicArray['tags'] = $tagsByMusic[$music->id] ?? [];
+                $musicArray['chords'] = $chordsByMusic[$music->id] ?? [];
+                return $musicArray;
+            },
+            $arrayMusics
+        );
     }
 }

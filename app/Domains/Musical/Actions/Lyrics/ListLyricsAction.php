@@ -2,28 +2,33 @@
 
 namespace App\Domains\Musical\Actions\Lyrics;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
-use App\Domains\Musical\Database\LyricsRepository;
+use App\Domains\Musical\Database\Models\Lyrics;
 
 class ListLyricsAction
 {
-    public function __construct(private LyricsRepository $lyrics)
+    public function execute(?string $content, ?int $id, int $page, int $perPage): array
     {
-    }
+        $query = Lyrics::query()
+            ->select(['id', 'content'])
+            ->when($content !== null && $content !== '', function ($query) use ($content) {
+                return $query->where('content', 'LIKE', "%{$content}%");
+            })
+            ->when($id, function ($query) use ($id) {
+                return $query->where('id', '=', $id);
+            })
+            ->orderBy('id');
 
-    public function execute(?string $content, ?int $id): array
-    {
-        $expression = new QueryExpression();
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+        $items = $paginated->getCollection()->map(fn (Lyrics $lyrics) => $lyrics->toArray())->all();
 
-        if ($content !== null && $content !== '') {
-            $expression = $expression->add(new QueryClausule('content', 'LIKE', "%{$content}%"));
-        }
-
-        if ($id) {
-            $expression = $expression->add(new QueryClausule('id', '=', $id));
-        }
-
-        return $this->lyrics->all($expression);
+        return [
+            'items' => $items,
+            'pagination' => [
+                'page' => $paginated->currentPage(),
+                'perPage' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'lastPage' => $paginated->lastPage(),
+            ],
+        ];
     }
 }

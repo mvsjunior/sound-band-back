@@ -19,26 +19,27 @@ class ChordEloquentRepository
 
     public function all(?QueryExpression $expressions = null): array
     {
-        $query = $this->db
-            ->select([
-                'chords.id',
-                'chords.music_id',
-                'chords.tone_id',
-                'chords.version',
-                'tones.name as tone_name',
-                'tones.type as tone_type',
-            ])
-            ->join('tones', 'chords.tone_id', '=', 'tones.id');
+        return $this->baseQuery($expressions)
+            ->get()
+            ->map(fn ($row) => (array) $row)
+            ->toArray();
+    }
 
-        if ($expressions) {
-            foreach ($expressions->expressions as $clausule) {
-                $query = !empty($clausule)
-                    ? $query->where($clausule->column, $clausule->operator, $clausule->value)
-                    : $query;
-            }
-        }
+    public function paginate(?QueryExpression $expressions, int $page, int $perPage): array
+    {
+        $query = $this->baseQuery($expressions)->orderBy('chords.id');
+        $total = (clone $query)->count();
+        $items = $query->forPage($page, $perPage)->get()->map(fn ($row) => (array) $row)->toArray();
 
-        return $query->get()->map(fn ($row) => (array) $row)->toArray();
+        return [
+            'items' => $items,
+            'pagination' => [
+                'page' => $page,
+                'perPage' => $perPage,
+                'total' => $total,
+                'lastPage' => $perPage > 0 ? (int) ceil($total / $perPage) : 0,
+            ],
+        ];
     }
 
     public function findById(int $id): ?array
@@ -59,6 +60,30 @@ class ChordEloquentRepository
             ->first();
 
         return $result ? (array) $result : null;
+    }
+
+    private function baseQuery(?QueryExpression $expressions = null): Builder
+    {
+        $query = $this->db
+            ->select([
+                'chords.id',
+                'chords.music_id',
+                'chords.tone_id',
+                'chords.version',
+                'tones.name as tone_name',
+                'tones.type as tone_type',
+            ])
+            ->join('tones', 'chords.tone_id', '=', 'tones.id');
+
+        if ($expressions) {
+            foreach ($expressions->expressions as $clausule) {
+                $query = !empty($clausule)
+                    ? $query->where($clausule->column, $clausule->operator, $clausule->value)
+                    : $query;
+            }
+        }
+
+        return $query;
     }
 
     public function store(Chord $chord, ChordContent $content): array

@@ -94,8 +94,8 @@ class MusicRoutesTest extends TestCase
                 'success' => true,
             ]);
 
-        $this->assertCount(1, $response->json('data'));
-        $this->assertSame($firstId, $response->json('data.0.id'));
+        $this->assertCount(1, $response->json('data.items'));
+        $this->assertSame($firstId, $response->json('data.items.0.id'));
     }
 
     public function test_can_store_music_with_tags(): void

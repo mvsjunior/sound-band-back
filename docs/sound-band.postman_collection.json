@@ -107,12 +107,28 @@
               "request": {
                 "method": "GET",
                 "url": {
-                  "raw": "{{baseUrl}}/musical/music?name=Hello&artist=Alpha",
+                  "raw": "{{baseUrl}}/musical/music?name=Hello&artist=Alpha&page=1&perPage=10",
                   "host": ["{{baseUrl}}"],
                   "path": ["musical", "music"],
                   "query": [
                     {"key": "name", "value": "Hello"},
-                    {"key": "artist", "value": "Alpha"}
+                    {"key": "artist", "value": "Alpha"},
+                    {"key": "page", "value": "1"},
+                    {"key": "perPage", "value": "10"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Music/Show",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/music/show?id=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "music", "show"],
+                  "query": [
+                    {"key": "id", "value": "1"}
                   ]
                 }
               }
@@ -181,9 +197,27 @@
               "request": {
                 "method": "GET",
                 "url": {
-                  "raw": "{{baseUrl}}/musical/category",
+                  "raw": "{{baseUrl}}/musical/category?page=1&perPage=10",
                   "host": ["{{baseUrl}}"],
-                  "path": ["musical", "category"]
+                  "path": ["musical", "category"],
+                  "query": [
+                    {"key": "page", "value": "1"},
+                    {"key": "perPage", "value": "10"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Category/Show",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/category/show?id=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "category", "show"],
+                  "query": [
+                    {"key": "id", "value": "1"}
+                  ]
                 }
               }
             },
@@ -251,9 +285,27 @@
               "request": {
                 "method": "GET",
                 "url": {
-                  "raw": "{{baseUrl}}/musical/tags",
+                  "raw": "{{baseUrl}}/musical/tags?page=1&perPage=10",
                   "host": ["{{baseUrl}}"],
-                  "path": ["musical", "tags"]
+                  "path": ["musical", "tags"],
+                  "query": [
+                    {"key": "page", "value": "1"},
+                    {"key": "perPage", "value": "10"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Tag/Show",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/tags/show?id=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "tags", "show"],
+                  "query": [
+                    {"key": "id", "value": "1"}
+                  ]
                 }
               }
             },
@@ -321,9 +373,27 @@
               "request": {
                 "method": "GET",
                 "url": {
-                  "raw": "{{baseUrl}}/musical/lyrics",
+                  "raw": "{{baseUrl}}/musical/lyrics?page=1&perPage=10",
                   "host": ["{{baseUrl}}"],
-                  "path": ["musical", "lyrics"]
+                  "path": ["musical", "lyrics"],
+                  "query": [
+                    {"key": "page", "value": "1"},
+                    {"key": "perPage", "value": "10"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Lyrics/Show",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/lyrics/show?id=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "lyrics", "show"],
+                  "query": [
+                    {"key": "id", "value": "1"}
+                  ]
                 }
               }
             },
@@ -391,11 +461,14 @@
               "request": {
                 "method": "GET",
                 "url": {
-                  "raw": "{{baseUrl}}/musical/chords?musicId=1",
+                  "raw": "{{baseUrl}}/musical/chords?musicId=1&tone=Gm&page=1&perPage=10",
                   "host": ["{{baseUrl}}"],
                   "path": ["musical", "chords"],
                   "query": [
-                    {"key": "musicId", "value": "1"}
+                    {"key": "musicId", "value": "1"},
+                    {"key": "tone", "value": "Gm"},
+                    {"key": "page", "value": "1"},
+                    {"key": "perPage", "value": "10"}
                   ]
                 }
               }
@@ -423,7 +496,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"musicId\": 1,\n  \"toneId\": 19,\n  \"version\": \"Guitar version in Gm\",\n  \"content\": \"Intro: Gm | Eb | Bb | F\"\n}"
+                  "raw": "{\n  \"musicId\": 1,\n  \"tone\": \"Gm\",\n  \"version\": \"Guitar version in Gm\",\n  \"content\": \"Intro: Gm | Eb | Bb | F\"\n}"
                 },
                 "url": {
                   "raw": "{{baseUrl}}/musical/chords/store",
@@ -441,7 +514,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"id\": 1,\n  \"musicId\": 1,\n  \"toneId\": 19,\n  \"version\": \"Updated version\",\n  \"content\": \"Updated content\"\n}"
+                  "raw": "{\n  \"id\": 1,\n  \"musicId\": 1,\n  \"tone\": \"Gm\",\n  \"version\": \"Updated version\",\n  \"content\": \"Updated content\"\n}"
                 },
                 "url": {
                   "raw": "{{baseUrl}}/musical/chords/update",
@@ -465,6 +538,189 @@
                   "raw": "{{baseUrl}}/musical/chords/delete",
                   "host": ["{{baseUrl}}"],
                   "path": ["musical", "chords", "delete"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Musicians",
+          "item": [
+            {
+              "name": "Musicians/Find",
+              "description": "Response includes a skills array with { id, name } for each musician.",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musicians?name=John&statusId=1&page=1&perPage=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musicians"],
+                  "query": [
+                    {"key": "name", "value": "John"},
+                    {"key": "statusId", "value": "1"},
+                    {"key": "page", "value": "1"},
+                    {"key": "perPage", "value": "10"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Musicians/Show",
+              "description": "Response includes a skills array with { id, name } for the musician.",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musicians/show?id=1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musicians", "show"],
+                  "query": [
+                    {"key": "id", "value": "1"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Musicians/Store",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"(11) 99999-9999\",\n  \"statusId\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musicians/store",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musicians", "store"]
+                }
+              }
+            },
+            {
+              "name": "Musicians/Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1,\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"(11) 99999-9999\",\n  \"statusId\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musicians/update",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musicians", "update"]
+                }
+              }
+            },
+            {
+              "name": "Musicians/Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musicians/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musicians", "delete"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Musician Skills",
+          "item": [
+            {
+              "name": "Musician Skills/Find",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musician-skills?musicianId=1&skillId=2&page=1&perPage=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musician-skills"],
+                  "query": [
+                    {"key": "musicianId", "value": "1"},
+                    {"key": "skillId", "value": "2"},
+                    {"key": "page", "value": "1"},
+                    {"key": "perPage", "value": "10"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Musician Skills/Show",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musician-skills/show?musicianId=1&skillId=2",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musician-skills", "show"],
+                  "query": [
+                    {"key": "musicianId", "value": "1"},
+                    {"key": "skillId", "value": "2"}
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Musician Skills/Store",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"musicianId\": 1,\n  \"skillId\": 2\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musician-skills/store",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musician-skills", "store"]
+                }
+              }
+            },
+            {
+              "name": "Musician Skills/Update",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"musicianId\": 1,\n  \"skillId\": 2,\n  \"newMusicianId\": 1,\n  \"newSkillId\": 3\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musician-skills/update",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musician-skills", "update"]
+                }
+              }
+            },
+            {
+              "name": "Musician Skills/Delete",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"musicianId\": 1,\n  \"skillId\": 2\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/musical/musician-skills/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["musical", "musician-skills", "delete"]
                 }
               }
             }

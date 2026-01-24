@@ -13,9 +13,37 @@ return new class extends Migration
     {
         Schema::create('chords', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tone_id')->constrained('tones');
-            $table->foreignId('chord_content_id')->constrained('chord_contents');
-            $table->foreignId('music_id')->constrained('musics');
+            $table->enum(
+                'tone',
+                [
+                    'C',
+                    'C#',
+                    'D',
+                    'Eb',
+                    'E',
+                    'F',
+                    'F#',
+                    'G',
+                    'Ab',
+                    'A',
+                    'Bb',
+                    'B',
+                    'Cm',
+                    'C#m',
+                    'Dm',
+                    'Ebm',
+                    'Em',
+                    'Fm',
+                    'F#m',
+                    'Gm',
+                    'Abm',
+                    'Am',
+                    'Bbm',
+                    'Bm'
+                ]
+            );
+            $table->foreignId('chord_content_id')->constrained('chord_contents')->cascadeOnDelete();
+            $table->foreignId('music_id')->constrained('musics')->cascadeOnDelete();
             $table->string('version')->nullable();
         });
     }

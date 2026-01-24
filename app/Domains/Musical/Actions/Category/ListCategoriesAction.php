@@ -2,28 +2,33 @@
 
 namespace App\Domains\Musical\Actions\Category;
 
-use App\Domains\Commons\Database\QueryClausule;
-use App\Domains\Commons\Database\QueryExpression;
-use App\Domains\Musical\Database\CategoryRepository;
+use App\Domains\Musical\Database\Models\Category;
 
 class ListCategoriesAction
 {
-    public function __construct(private CategoryRepository $categories)
+    public function execute(?string $name, ?int $id, int $page, int $perPage): array
     {
-    }
+        $query = Category::query()
+            ->select(['id', 'name'])
+            ->when($name !== null && $name !== '', function ($query) use ($name) {
+                return $query->where('name', 'LIKE', "%{$name}%");
+            })
+            ->when($id, function ($query) use ($id) {
+                return $query->where('id', '=', $id);
+            })
+            ->orderBy('id');
 
-    public function execute(?string $name, ?int $id): array
-    {
-        $expression = new QueryExpression();
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+        $items = $paginated->getCollection()->map(fn (Category $category) => $category->toArray())->all();
 
-        if ($name !== null && $name !== '') {
-            $expression = $expression->add(new QueryClausule('name', 'LIKE', "%{$name}%"));
-        }
-
-        if ($id) {
-            $expression = $expression->add(new QueryClausule('id', '=', $id));
-        }
-
-        return $this->categories->all($expression);
+        return [
+            'items' => $items,
+            'pagination' => [
+                'page' => $paginated->currentPage(),
+                'perPage' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'lastPage' => $paginated->lastPage(),
+            ],
+        ];
     }
 }
