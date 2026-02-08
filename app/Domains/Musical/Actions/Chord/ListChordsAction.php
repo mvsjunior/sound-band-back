@@ -27,10 +27,8 @@ class ListChordsAction
             return [
                 'id' => $chord->id,
                 'music_id' => $chord->music_id,
-                'tone_id' => 0,
                 'version' => $chord->version,
-                'tone_name' => $chord->tone ?? '',
-                'tone_type' => $chord->tone ?? '',
+                'tone' => $chord->tone ?? ''
             ];
         })->all();
 

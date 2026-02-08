@@ -27,11 +27,9 @@ class StoreChordAction
         $chordData = [
             'id' => $chord->id,
             'music_id' => $chord->music_id,
-            'tone_id' => 0,
             'version' => $chord->version,
             'chord_content' => $chord->chordContent?->content,
-            'tone_name' => $chord->tone ?? '',
-            'tone_type' => $chord->tone ?? '',
+            'tone' => $chord->tone ?? '',
         ];
 
         return ChordDTOMapper::fromArray($chordData);
